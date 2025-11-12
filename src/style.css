@@ -151,3 +151,16 @@
 .ml-12 {
   margin-left: 12px;
 }
+
+.profile {
+  display: flex;
+  flex-direction: column;
+}
+
+.name{
+  font-size: 15px;
+  font-weight: 600;
+}
+.category{
+  font-size: .8rem;
+}

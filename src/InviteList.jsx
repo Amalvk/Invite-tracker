@@ -1,7 +1,28 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./style.css";
+import { db } from "./firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 const App = () => {
+  const [friends, setFriends] = useState([]);
+    useEffect(() => {
+    const fetchFriends = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "inviteFriends"));
+        const friendList = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setFriends(friendList);
+      } catch (error) {
+        console.error("Error fetching friends:", error);
+      }
+    };
+
+    fetchFriends();
+  }, []);
+
+
   return (
     <div className="page">
       {/* Header */}
@@ -52,13 +73,17 @@ const App = () => {
 
         {/* Not Called */}
         <div className="section">
-          <h3 className="section-title">Not Called</h3>
-          {["Rahul Kumar", "Neha Sharma", "Suresh Rao"].map((name, i) => (
+          <h3 className="section-title">Yet to inform</h3>
+          <hr style={{ marginBlock: '1rem' }} />
+          {friends.map((item, i) => (
             <div key={i} className="friend-row">
-              <span>{name}</span>
-              <button className="friend-button">
-                {name === "Rahul Kumar" ? "Called / Informed" : "Undo"}
-              </button>
+              <div className="profile">
+                <span className="name">{item.name}</span>
+                <span className="category">{item.category}</span>
+              </div>
+              {item.status == false &&<button className="friend-button">
+                { "Called"}
+              </button>}
             </div>
           ))}
         </div>
