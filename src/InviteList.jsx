@@ -191,7 +191,7 @@ const InviteList = () => {
                       Called
                     </button>
                     <button
-                      className="friend-button delete-btn"
+                      className="delete-btn"
                       onClick={() => {
                         setSelectedFriend(item);
                         setConfirmAction("delete");
@@ -234,7 +234,7 @@ const InviteList = () => {
                       setConfirmModal(true);
                     }}
                   >
-                    Need to call
+                    Undo
                   </button>
                   <button
                     className="delete-btn"

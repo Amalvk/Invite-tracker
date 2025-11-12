@@ -147,7 +147,8 @@
   border-radius: 14px;
   padding: 15px;
   margin-bottom: 15px;
-  height: 15rem;
+  height: fit-content;
+  max-height: 15rem;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #ccc transparent;
@@ -176,7 +177,7 @@
 }
 
 .friend-button {
-  background-color: #f3ede7;
+  background-color: #e2d5c7;
   border: none;
   border-radius: 8px;
   padding: 6px 12px;
@@ -185,12 +186,13 @@
 }
 
 .delete-btn{
-  background-color: #af565677;
-border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
+  background-color: #e2d5c7;
+  color: rgb(88, 26, 26);
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
 }
 .ml-12 {
   margin-left: 12px;
