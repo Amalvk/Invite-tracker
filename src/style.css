@@ -144,11 +144,14 @@
 }
 
 .friend-row {
+  background-color: #f3ede7;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
   font-size: 14px;
+  border-radius: .5rem;
+  padding-inline: .3rem;
 }
 
 .friend-button {
@@ -160,6 +163,14 @@
   cursor: pointer;
 }
 
+.delete-btn{
+  background-color: #af565677;
+border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
 .ml-12 {
   margin-left: 12px;
 }

@@ -7,6 +7,8 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  updateDoc,
+  deleteDoc,
   Timestamp,
 } from "firebase/firestore";
 
@@ -16,21 +18,26 @@ const InviteList = () => {
   const [showModal, setShowModal] = useState(false);
   const [newFriend, setNewFriend] = useState({ name: "", category: "" });
 
-  // Fetch data
-  useEffect(() => {
-    const fetchFriends = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "inviteFriends"));
-        const friendList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setFriends(friendList);
-      } catch (error) {
-        console.error("Error fetching friends:", error);
-      }
-    };
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(""); // 'called', 'uncalled', or 'delete'
+  const [selectedFriend, setSelectedFriend] = useState(null);
 
+  // Fetch all friends
+  const fetchFriends = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "inviteFriends"));
+      const friendList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setFriends(friendList);
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+    }
+  };
+
+  // Fetch categories
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
         const categoryRef = doc(db, "categories", "category");
@@ -50,7 +57,7 @@ const InviteList = () => {
     fetchCategories();
   }, []);
 
-  // Handle add friend submit
+  // Add new friend
   const handleAddFriend = async (e) => {
     e.preventDefault();
     if (!newFriend.name || !newFriend.category) {
@@ -67,17 +74,47 @@ const InviteList = () => {
       });
       setShowModal(false);
       setNewFriend({ name: "", category: "" });
-
-      // Refresh the list
-      const querySnapshot = await getDocs(collection(db, "inviteFriends"));
-      setFriends(
-        querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-      );
+      fetchFriends();
     } catch (error) {
       console.error("Error adding friend:", error);
+    }
+  };
+
+  // Confirm action (called, uncalled, delete)
+  const handleConfirmAction = async () => {
+    if (!selectedFriend) return;
+
+    try {
+      const friendRef = doc(db, "inviteFriends", selectedFriend.id);
+
+      if (confirmAction === "delete") {
+        await deleteDoc(friendRef);
+      } else {
+        await updateDoc(friendRef, {
+          status: confirmAction === "called",
+        });
+      }
+
+      setConfirmModal(false);
+      setSelectedFriend(null);
+      fetchFriends();
+    } catch (error) {
+      console.error("Error performing action:", error);
+    }
+  };
+
+  // Modal question text
+  const getModalText = () => {
+    if (!selectedFriend) return "";
+    switch (confirmAction) {
+      case "called":
+        return `Did you inform ${selectedFriend.name}?`;
+      case "uncalled":
+        return `You didn’t call ${selectedFriend.name}?`;
+      case "delete":
+        return `Are you sure you want to delete ${selectedFriend.name}?`;
+      default:
+        return "";
     }
   };
 
@@ -100,8 +137,7 @@ const InviteList = () => {
               <strong>Called:</strong> {friends.filter((f) => f.status).length}
             </span>
             <span className="ml-12">
-              <strong>Pending:</strong>{" "}
-              {friends.filter((f) => !f.status).length}
+              <strong>Pending:</strong> {friends.filter((f) => !f.status).length}
             </span>
           </div>
           <button className="button" onClick={() => setShowModal(true)}>
@@ -135,44 +171,89 @@ const InviteList = () => {
             .filter((f) => !f.status)
             .map((item, i) => (
               <div key={i} className="friend-row">
-                <div style={{ display: 'flex', gap: '5px', marginTop: '1rem' }}>
-                  <div>{i + 1}){" "}</div>
+                <div style={{ display: "flex", gap: "5px", marginBlock: ".5rem" }}>
+                  <div>{i + 1})</div>
                   <div className="profile">
                     <span className="name">{item.name}</span>
                     <span className="category">{item.category}</span>
                   </div>
-
-                </div> <button className="friend-button">Called</button>
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button
+                    className="friend-button"
+                    onClick={() => {
+                      setSelectedFriend(item);
+                      setConfirmAction("called");
+                      setConfirmModal(true);
+                    }}
+                  >
+                    Called
+                  </button>
+                  <button
+                    className="friend-button delete-btn"
+                    onClick={() => {
+                      setSelectedFriend(item);
+                      setConfirmAction("delete");
+                      setConfirmModal(true);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
+          {friends.filter((f) => !f.status).length === 0 && (
+            <div className="friend-row">No one yet to inform !!</div>
+          )}
         </div>
 
         {/* Called / Informed */}
         <div className="section">
           <h3 className="section-title">Called / Informed</h3>
-           <hr style={{ marginBlock: "1rem" }} />
+          <hr style={{ marginBlock: "1rem" }} />
           {friends
             .filter((f) => f.status)
             .map((item, i) => (
               <div key={i} className="friend-row">
-                <div style={{ display: 'flex', gap: '5px', marginTop: '1rem' }}>
-                  <div>{i + 1}){" "}</div>
+                <div style={{ display: "flex", gap: "5px", marginBlock: ".5rem" }}>
+                  <div>{i + 1})</div>
                   <div className="profile">
                     <span className="name">{item.name}</span>
                     <span className="category">{item.category}</span>
                   </div>
-
-                </div> <button className="friend-button">Need to call </button>
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button
+                    className="friend-button"
+                    onClick={() => {
+                      setSelectedFriend(item);
+                      setConfirmAction("uncalled");
+                      setConfirmModal(true);
+                    }}
+                  >
+                    Need to call
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => {
+                      setSelectedFriend(item);
+                      setConfirmAction("delete");
+                      setConfirmModal(true);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Add Friend Modal */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Add New</h3>
+            <h3>Add New Friend</h3>
             <form onSubmit={handleAddFriend}>
               <input
                 type="text"
@@ -217,7 +298,31 @@ const InviteList = () => {
           </div>
         </div>
       )}
-      
+
+      {/* Confirm Modal */}
+      {confirmModal && selectedFriend && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Confirmation</h3>
+            <p>{getModalText()}</p>
+            <div className="modal-actions">
+              <button onClick={handleConfirmAction} className="button">
+                Yes
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmModal(false);
+                  setSelectedFriend(null);
+                }}
+                className="button"
+                style={{ backgroundColor: "#eee", marginLeft: "8px" }}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
