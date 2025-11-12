@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
 import "./style.css";
 import { db } from "./firebase";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  Timestamp,
+} from "firebase/firestore";
 
 const InviteList = () => {
   const [friends, setFriends] = useState([]);
   const [categories, setCategories] = useState([]);
-  useEffect(() => {  
-    // Fetch all friends
+  const [showModal, setShowModal] = useState(false);
+  const [newFriend, setNewFriend] = useState({ name: "", category: "" });
+
+  // Fetch data
+  useEffect(() => {
     const fetchFriends = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "inviteFriends"));
@@ -21,16 +31,13 @@ const InviteList = () => {
       }
     };
 
-    // Fetch categories array from `categories/category`
     const fetchCategories = async () => {
-      
       try {
         const categoryRef = doc(db, "categories", "category");
         const categorySnap = await getDoc(categoryRef);
         if (categorySnap.exists()) {
           const data = categorySnap.data();
-          console.log("Called",data);
-          setCategories(data?.categoryNames || []); // assuming the array field is named "array"
+          setCategories(data?.categoryNames || []);
         } else {
           console.log("No category document found!");
         }
@@ -43,15 +50,43 @@ const InviteList = () => {
     fetchCategories();
   }, []);
 
+  // Handle add friend submit
+  const handleAddFriend = async (e) => {
+    e.preventDefault();
+    if (!newFriend.name || !newFriend.category) {
+      alert("Please enter both name and category.");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "inviteFriends"), {
+        name: newFriend.name,
+        category: newFriend.category,
+        status: false,
+        createdAt: Timestamp.now(),
+      });
+      setShowModal(false);
+      setNewFriend({ name: "", category: "" });
+
+      // Refresh the list
+      const querySnapshot = await getDocs(collection(db, "inviteFriends"));
+      setFriends(
+        querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+      );
+    } catch (error) {
+      console.error("Error adding friend:", error);
+    }
+  };
 
   return (
     <div className="page">
       {/* Header */}
       <div className="header">
         <h1 className="title">Wedding Invitation Tracker</h1>
-        <p className="subtitle">
-          Organize and track your invitations beautifully.
-        </p>
+        <p className="subtitle">Organize and track your invitations beautifully.</p>
       </div>
 
       {/* Stats */}
@@ -59,67 +94,130 @@ const InviteList = () => {
         <div className="stats-row">
           <div>
             <span>
-              <strong>Total Friends:</strong> 45
+              <strong>Total Friends:</strong> {friends.length}
             </span>
             <span className="ml-12">
-              <strong>Called:</strong> 28
+              <strong>Called:</strong> {friends.filter((f) => f.status).length}
             </span>
             <span className="ml-12">
-              <strong>Pending:</strong> 17
+              <strong>Pending:</strong>{" "}
+              {friends.filter((f) => !f.status).length}
             </span>
           </div>
-          <button className="button">+ Add Category</button>
+          <button className="button" onClick={() => setShowModal(true)}>
+            + Add Friend
+          </button>
         </div>
         <div className="progress-bar">
-          <div className="progress-fill"></div>
+          <div
+            className="progress-fill"
+            style={{
+              width: `${
+                (friends.filter((f) => f.status).length / (friends.length || 1)) *
+                100
+              }%`,
+            }}
+          ></div>
         </div>
-      </div>
-
-      {/* Search */}
-      <div className="search-box">
-        <input
-          type="text"
-          placeholder="Search friend name"
-          className="input"
-        />
       </div>
 
       {/* Category Section */}
       <div className="category-card">
         <div className="category-header">
-          <h2 className="category-title">Local Friends</h2>
-          <button className="button">+ Add Friend</button>
+          <h2 className="category-title">Friends List</h2>
         </div>
-        <p className="category-info">6 Total | 3 Called | 3 Pending</p>
 
-        {/* Not Called */}
+        {/* Yet to Inform */}
         <div className="section">
           <h3 className="section-title">Yet to inform</h3>
-          <hr style={{ marginBlock: '1rem' }} />
-          {friends.map((item, i) => (
-            <div key={i} className="friend-row">
-              <div className="profile">
-                <span className="name">{item.name}</span>
-                <span className="category">{item.category}</span>
+          <hr style={{ marginBlock: "1rem" }} />
+          {friends
+            .filter((f) => !f.status)
+            .map((item, i) => (
+              <div key={i} className="friend-row">
+                <div style={{ display: 'flex', gap: '5px', marginTop: '1rem' }}>
+                  <div>{i + 1}){" "}</div>
+                  <div className="profile">
+                    <span className="name">{item.name}</span>
+                    <span className="category">{item.category}</span>
+                  </div>
+
+                </div> <button className="friend-button">Called</button>
               </div>
-              {item.status == false &&<button className="friend-button">
-                { "Called"}
-              </button>}
-            </div>
-          ))}
+            ))}
         </div>
 
         {/* Called / Informed */}
         <div className="section">
           <h3 className="section-title">Called / Informed</h3>
-          {["Sneha Iyer", "Ankit Tiwari", "Divya Patel"].map((name, i) => (
-            <div key={i} className="friend-row">
-              <span>{name}</span>
-              <button className="friend-button">Undo</button>
-            </div>
-          ))}
+           <hr style={{ marginBlock: "1rem" }} />
+          {friends
+            .filter((f) => f.status)
+            .map((item, i) => (
+              <div key={i} className="friend-row">
+                <div style={{ display: 'flex', gap: '5px', marginTop: '1rem' }}>
+                  <div>{i + 1}){" "}</div>
+                  <div className="profile">
+                    <span className="name">{item.name}</span>
+                    <span className="category">{item.category}</span>
+                  </div>
+
+                </div> <button className="friend-button">Need to call </button>
+              </div>
+            ))}
         </div>
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Add New</h3>
+            <form onSubmit={handleAddFriend}>
+              <input
+                type="text"
+                placeholder="Enter friend name"
+                value={newFriend.name}
+                onChange={(e) =>
+                  setNewFriend({ ...newFriend, name: e.target.value })
+                }
+                className="input"
+                style={{ marginBottom: "12px" }}
+              />
+
+              <select
+                value={newFriend.category}
+                onChange={(e) =>
+                  setNewFriend({ ...newFriend, category: e.target.value })
+                }
+                className="inputselect"
+              >
+                <option value="">Select category</option>
+                {categories.map((cat, i) => (
+                  <option key={i} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+
+              <div className="modal-actions">
+                <button type="submit" className="button">
+                  Submit
+                </button>
+                <button
+                  type="button"
+                  className="button"
+                  onClick={() => setShowModal(false)}
+                  style={{ backgroundColor: "#eee", marginLeft: "8px" }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 };
