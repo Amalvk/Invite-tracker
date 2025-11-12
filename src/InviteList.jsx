@@ -3,7 +3,7 @@ import "./style.css";
 import { db } from "./firebase";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 
-const App = () => {
+const InviteList = () => {
   const [friends, setFriends] = useState([]);
   const [categories, setCategories] = useState([]);
   useEffect(() => {  
@@ -124,4 +124,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default InviteList;
