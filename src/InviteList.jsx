@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "./style.css";
 import { db } from "./firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 
 const App = () => {
   const [friends, setFriends] = useState([]);
-    useEffect(() => {
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {  
+    // Fetch all friends
     const fetchFriends = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "inviteFriends"));
@@ -19,7 +21,26 @@ const App = () => {
       }
     };
 
+    // Fetch categories array from `categories/category`
+    const fetchCategories = async () => {
+      
+      try {
+        const categoryRef = doc(db, "categories", "category");
+        const categorySnap = await getDoc(categoryRef);
+        if (categorySnap.exists()) {
+          const data = categorySnap.data();
+          console.log("Called",data);
+          setCategories(data?.categoryNames || []); // assuming the array field is named "array"
+        } else {
+          console.log("No category document found!");
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
     fetchFriends();
+    fetchCategories();
   }, []);
 
 
