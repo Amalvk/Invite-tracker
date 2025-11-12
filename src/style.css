@@ -142,6 +142,27 @@
   font-weight: 600;
   margin-bottom: 10px;
 }
+.friend-list{
+   background-color: #f9f7f5;
+  border-radius: 14px;
+  padding: 15px;
+  margin-bottom: 15px;
+  height: 15rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+
+}
+
+.friend-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.friend-list::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 6px;
+}
+
 
 .friend-row {
   background-color: #f3ede7;

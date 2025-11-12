@@ -167,50 +167,53 @@ const InviteList = () => {
         <div className="section">
           <h3 className="section-title">Yet to inform</h3>
           <hr style={{ marginBlock: "1rem" }} />
-          {friends
-            .filter((f) => !f.status)
-            .map((item, i) => (
-              <div key={i} className="friend-row">
-                <div style={{ display: "flex", gap: "5px", marginBlock: ".5rem" }}>
-                  <div>{i + 1})</div>
-                  <div className="profile">
-                    <span className="name">{item.name}</span>
-                    <span className="category">{item.category}</span>
+          <div className="friend-list">
+            {friends
+              .filter((f) => !f.status)
+              .map((item, i) => (
+                <div key={i} className="friend-row">
+                  <div style={{ display: "flex", gap: "5px", marginBlock: ".5rem" }}>
+                    <div>{i + 1})</div>
+                    <div className="profile">
+                      <span className="name">{item.name}</span>
+                      <span className="category">{item.category}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      className="friend-button"
+                      onClick={() => {
+                        setSelectedFriend(item);
+                        setConfirmAction("called");
+                        setConfirmModal(true);
+                      }}
+                    >
+                      Called
+                    </button>
+                    <button
+                      className="friend-button delete-btn"
+                      onClick={() => {
+                        setSelectedFriend(item);
+                        setConfirmAction("delete");
+                        setConfirmModal(true);
+                      }}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button
-                    className="friend-button"
-                    onClick={() => {
-                      setSelectedFriend(item);
-                      setConfirmAction("called");
-                      setConfirmModal(true);
-                    }}
-                  >
-                    Called
-                  </button>
-                  <button
-                    className="friend-button delete-btn"
-                    onClick={() => {
-                      setSelectedFriend(item);
-                      setConfirmAction("delete");
-                      setConfirmModal(true);
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          {friends.filter((f) => !f.status).length === 0 && (
-            <div className="friend-row">No one yet to inform !!</div>
-          )}
+              ))}
+            {friends.filter((f) => !f.status).length === 0 && (
+              <div className="friend-row">No one yet to inform !!</div>
+            )}
+          </div>
         </div>
 
         {/* Called / Informed */}
         <div className="section">
           <h3 className="section-title">Called / Informed</h3>
           <hr style={{ marginBlock: "1rem" }} />
+          <div className="friend-list">
           {friends
             .filter((f) => f.status)
             .map((item, i) => (
@@ -246,6 +249,7 @@ const InviteList = () => {
                 </div>
               </div>
             ))}
+        </div>
         </div>
       </div>
 
