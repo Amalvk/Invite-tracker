@@ -161,18 +161,35 @@ const InviteList = () => {
 
       {/* Tabs Section */}
       <div className="category-card">
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          centered
-          textColor="primary"
-          indicatorColor="primary"
-        >
-          <Tab label="Yet to inform" />
-          <Tab label="Called / Informed" />
-        </Tabs>
+<Tabs
+  value={value}
+  onChange={handleChange}
+  textColor="primary"
+  sx={{
+    display: "flex",
+    justifyContent: "flex-start",
+    "& .MuiTab-root": {
+      fontWeight: "600",
+      textTransform: "capitalize",
+      letterSpacing: "0.5px",
+      color: "gray",
+      minWidth: "auto",
+      paddingInline: "16px",
+    },
+    "& .Mui-selected": {
+      color: "#000 !important",
+    },
+    "& .MuiTabs-indicator": {
+      display: "none", // hides the underline
+    },
+  }}
+>
+  <Tab label="Yet to inform" />
+  <Tab label="Called / Informed" />
+</Tabs>
 
-        <div style={{ paddingTop: '20px' }}>
+
+        <div style={{ paddingTop: '10px' }}>
           {/* Tab 1 - Yet to inform */}
           {value === 0 && (
             <div className="friend-list">
