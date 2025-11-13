@@ -24,6 +24,7 @@ const InviteList = () => {
   const [confirmModal, setConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState("");
   const [selectedFriend, setSelectedFriend] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch all friends
   const fetchFriends = async () => {
@@ -120,6 +121,11 @@ const InviteList = () => {
     }
   };
 
+  // Filtered friends by search
+  const filteredFriends = friends.filter((f) =>
+    f.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="page">
       {/* Header */}
@@ -150,89 +156,96 @@ const InviteList = () => {
           <div
             className="progress-fill"
             style={{
-              width: `${
-                (friends.filter((f) => f.status).length / (friends.length || 1)) *
-                100
-              }%`,
+              width: `${(friends.filter((f) => f.status).length / (friends.length || 1)) * 100}%`,
             }}
           ></div>
+        </div>
+
+        {/* Search Input */}
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Search by name..."
+            className="input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
 
       {/* Tabs Section */}
       <div className="category-card">
-<Tabs
-  value={value}
-  onChange={handleChange}
-  textColor="primary"
-  sx={{
-    display: "flex",
-    justifyContent: "flex-start",
-    "& .MuiTab-root": {
-      fontWeight: "600",
-      textTransform: "capitalize",
-      letterSpacing: "0.5px",
-      color: "gray",
-      minWidth: "auto",
-      paddingInline: "16px",
-    },
-    "& .Mui-selected": {
-      color: "#000 !important",
-    },
-    "& .MuiTabs-indicator": {
-      display: "none", // hides the underline
-    },
-  }}
->
-  <Tab label="Yet to inform" />
-  <Tab label="Called / Informed" />
-</Tabs>
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          textColor="primary"
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            "& .MuiTab-root": {
+              fontWeight: "600",
+              textTransform: "capitalize",
+              letterSpacing: "0.5px",
+              color: "gray",
+              minWidth: "auto",
+              paddingInline: "16px",
+            },
+            "& .Mui-selected": {
+              color: "#000 !important",
+            },
+            "& .MuiTabs-indicator": {
+              display: "none",
+            },
+          }}
+        >
+          <Tab label="Yet to inform" />
+          <Tab label="Called / Informed" />
+        </Tabs>
 
-
-        <div style={{ paddingTop: '10px' }}>
+        <div style={{ paddingTop: "10px" }}>
           {/* Tab 1 - Yet to inform */}
           {value === 0 && (
             <div className="friend-list">
-              {friends.filter((f) => !f.status).length === 0 ? (
+              {filteredFriends.filter((f) => !f.status).length === 0 ? (
                 <Typography variant="h6" align="center">
                   No one yet to inform !!
                 </Typography>
               ) : (
-            friends
-              .filter((f) => !f.status)
-              .map((item, i) => (
-                <div key={i} className="friend-row">
-                  <div style={{ display: "flex", gap: "5px", marginBlock: ".5rem" }}>
-                    <div>{i + 1})</div>
-                    <div className="profile">
-                      <span className="name">{item.name}</span>
-                      <span className="category">{item.category}</span>
+                filteredFriends
+                  .filter((f) => !f.status)
+                  .map((item, i) => (
+                    <div key={i} className="friend-row">
+                      <div style={{ display: "flex", gap: "5px", marginBlock: ".5rem" }}>
+                        <div>{i + 1})</div>
+                        <div className="profile">
+                          <span className="name">{item.name}</span>
+                          <span className="category">{item.category}</span>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          className="friend-button"
+                          onClick={() => {
+                            setSelectedFriend(item);
+                            setConfirmAction("called");
+                            setConfirmModal(true);
+                          }}
+                        >
+                          Called
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => {
+                            setSelectedFriend(item);
+                            setConfirmAction("delete");
+                            setConfirmModal(true);
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button
-                      className="friend-button"
-                      onClick={() => {
-                        setSelectedFriend(item);
-                        setConfirmAction("called");
-                        setConfirmModal(true);
-                      }}
-                    >
-                      Called
-                    </button>
-                    <button
-                      className="delete-btn"
-                      onClick={() => {
-                        setSelectedFriend(item);
-                        setConfirmAction("delete");
-                        setConfirmModal(true);
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))
+                  ))
               )}
             </div>
           )}
@@ -240,49 +253,49 @@ const InviteList = () => {
           {/* Tab 2 - Called / Informed */}
           {value === 1 && (
             <div className="friend-list">
-              {friends.filter((f) => f.status).length === 0 ? (
-          <Typography variant="h8" align="center">
-            No one called or informed yet !!
-          </Typography>
-        ) : (
-          friends
-            .filter((f) => f.status)
-            .map((item, i) => (
-              <div key={i} className="friend-row">
-                <div style={{ display: "flex", gap: "5px", marginBlock: ".5rem" }}>
-                  <div>{i + 1})</div>
-                  <div className="profile">
-                    <span className="name">{item.name}</span>
-                    <span className="category">{item.category}</span>
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button
-                    className="friend-button"
-                    onClick={() => {
-                      setSelectedFriend(item);
-                      setConfirmAction("uncalled");
-                      setConfirmModal(true);
-                    }}
-                  >
-                    Undo
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => {
-                      setSelectedFriend(item);
-                      setConfirmAction("delete");
-                      setConfirmModal(true);
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))
-        )}
-      </div>
-    )}
+              {filteredFriends.filter((f) => f.status).length === 0 ? (
+                <Typography variant="h8" align="center">
+                  No one called or informed yet !!
+                </Typography>
+              ) : (
+                filteredFriends
+                  .filter((f) => f.status)
+                  .map((item, i) => (
+                    <div key={i} className="friend-row">
+                      <div style={{ display: "flex", gap: "5px", marginBlock: ".5rem" }}>
+                        <div>{i + 1})</div>
+                        <div className="profile">
+                          <span className="name">{item.name}</span>
+                          <span className="category">{item.category}</span>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          className="friend-button"
+                          onClick={() => {
+                            setSelectedFriend(item);
+                            setConfirmAction("uncalled");
+                            setConfirmModal(true);
+                          }}
+                        >
+                          Undo
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => {
+                            setSelectedFriend(item);
+                            setConfirmAction("delete");
+                            setConfirmModal(true);
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          )}
         </div>
       </div>
 
