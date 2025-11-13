@@ -11,7 +11,7 @@ import {
   deleteDoc,
   Timestamp,
 } from "firebase/firestore";
-import { Box, Tabs, Tab, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 
 const InviteList = () => {
   const [value, setValue] = useState(0);
@@ -166,7 +166,7 @@ const InviteList = () => {
           <input
             type="text"
             placeholder="Search by name..."
-            className="input"
+            className="input-search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -175,32 +175,20 @@ const InviteList = () => {
 
       {/* Tabs Section */}
       <div className="category-card">
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          textColor="primary"
-          sx={{
-            display: "flex",
-            justifyContent: "flex-start",
-            "& .MuiTab-root": {
-              fontWeight: "600",
-              textTransform: "capitalize",
-              letterSpacing: "0.5px",
-              color: "gray",
-              minWidth: "auto",
-              paddingInline: "16px",
-            },
-            "& .Mui-selected": {
-              color: "#000 !important",
-            },
-            "& .MuiTabs-indicator": {
-              display: "none",
-            },
-          }}
-        >
-          <Tab label="Yet to inform" />
-          <Tab label="Called / Informed" />
-        </Tabs>
+        <div className="custom-tabs">
+          <div
+            className={`tab-item ${value === 0 ? "active" : ""}`}
+            onClick={() => setValue(0)}
+          >
+            Yet to inform
+          </div>
+          <div
+            className={`tab-item ${value === 1 ? "active" : ""}`}
+            onClick={() => setValue(1)}
+          >
+            Called / Informed
+          </div>
+        </div>
 
         <div style={{ paddingTop: "10px" }}>
           {/* Tab 1 - Yet to inform */}
@@ -213,6 +201,7 @@ const InviteList = () => {
               ) : (
                 filteredFriends
                   .filter((f) => !f.status)
+                  .sort((a, b) => a.name.localeCompare(b.name))
                   .map((item, i) => (
                     <div key={i} className="friend-row">
                       <div style={{ display: "flex", gap: "5px", marginBlock: ".5rem" }}>
@@ -260,6 +249,7 @@ const InviteList = () => {
               ) : (
                 filteredFriends
                   .filter((f) => f.status)
+                  .sort((a, b) => a.name.localeCompare(b.name))
                   .map((item, i) => (
                     <div key={i} className="friend-row">
                       <div style={{ display: "flex", gap: "5px", marginBlock: ".5rem" }}>
@@ -312,7 +302,7 @@ const InviteList = () => {
                 onChange={(e) =>
                   setNewFriend({ ...newFriend, name: e.target.value })
                 }
-                className="input"
+                className="input-box"
                 style={{ marginBottom: "12px" }}
               />
 
