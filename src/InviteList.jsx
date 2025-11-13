@@ -11,15 +11,18 @@ import {
   deleteDoc,
   Timestamp,
 } from "firebase/firestore";
+import { Box, Tabs, Tab, Typography } from "@mui/material";
 
 const InviteList = () => {
+  const [value, setValue] = useState(0);
+  const handleChange = (event, newValue) => setValue(newValue);
+
   const [friends, setFriends] = useState([]);
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newFriend, setNewFriend] = useState({ name: "", category: "" });
-
   const [confirmModal, setConfirmModal] = useState(false);
-  const [confirmAction, setConfirmAction] = useState(""); // 'called', 'uncalled', or 'delete'
+  const [confirmAction, setConfirmAction] = useState("");
   const [selectedFriend, setSelectedFriend] = useState(null);
 
   // Fetch all friends
@@ -80,13 +83,12 @@ const InviteList = () => {
     }
   };
 
-  // Confirm action (called, uncalled, delete)
+  // Confirm action
   const handleConfirmAction = async () => {
     if (!selectedFriend) return;
 
     try {
       const friendRef = doc(db, "inviteFriends", selectedFriend.id);
-
       if (confirmAction === "delete") {
         await deleteDoc(friendRef);
       } else {
@@ -157,18 +159,29 @@ const InviteList = () => {
         </div>
       </div>
 
-      {/* Category Section */}
+      {/* Tabs Section */}
       <div className="category-card">
-        <div className="category-header">
-          <div className="category-title">Friends List</div>
-        </div>
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          centered
+          textColor="primary"
+          indicatorColor="primary"
+        >
+          <Tab label="Yet to inform" />
+          <Tab label="Called / Informed" />
+        </Tabs>
 
-        {/* Yet to Inform */}
-        <div className="section">
-          <h3 className="section-title">Yet to inform</h3>
-          <hr style={{ marginBlock: "1rem" }} />
-          <div className="friend-list">
-            {friends
+        <div style={{ paddingTop: '20px' }}>
+          {/* Tab 1 - Yet to inform */}
+          {value === 0 && (
+            <div className="friend-list">
+              {friends.filter((f) => !f.status).length === 0 ? (
+                <Typography variant="h6" align="center">
+                  No one yet to inform !!
+                </Typography>
+              ) : (
+            friends
               .filter((f) => !f.status)
               .map((item, i) => (
                 <div key={i} className="friend-row">
@@ -202,19 +215,20 @@ const InviteList = () => {
                     </button>
                   </div>
                 </div>
-              ))}
-            {friends.filter((f) => !f.status).length === 0 && (
-              <div className="friend-row">No one yet to inform !!</div>
-            )}
-          </div>
-        </div>
+              ))
+              )}
+            </div>
+          )}
 
-        {/* Called / Informed */}
-        <div className="section">
-          <h3 className="section-title">Called / Informed</h3>
-          <hr style={{ marginBlock: "1rem" }} />
-          <div className="friend-list">
-          {friends
+          {/* Tab 2 - Called / Informed */}
+          {value === 1 && (
+            <div className="friend-list">
+              {friends.filter((f) => f.status).length === 0 ? (
+          <Typography variant="h8" align="center">
+            No one called or informed yet !!
+          </Typography>
+        ) : (
+          friends
             .filter((f) => f.status)
             .map((item, i) => (
               <div key={i} className="friend-row">
@@ -248,8 +262,10 @@ const InviteList = () => {
                   </button>
                 </div>
               </div>
-            ))}
-        </div>
+            ))
+        )}
+      </div>
+    )}
         </div>
       </div>
 
