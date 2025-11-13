@@ -131,7 +131,7 @@ const InviteList = () => {
         <div className="stats-row">
           <div>
             <span>
-              <strong>Total Friends:</strong> {friends.length}
+              <strong>Total :</strong> {friends.length}
             </span>
             <span className="ml-12">
               <strong>Called:</strong> {friends.filter((f) => f.status).length}
@@ -160,7 +160,7 @@ const InviteList = () => {
       {/* Category Section */}
       <div className="category-card">
         <div className="category-header">
-          <h2 className="category-title">Friends List</h2>
+          <div className="category-title">Friends List</div>
         </div>
 
         {/* Yet to Inform */}
